@@ -1,61 +1,32 @@
-import json
 import subprocess
+import os
+from renderer.build_srt import build_srt
 
-def seconds_to_srt_time(seconds: float) -> str:
-    hrs = int(seconds // 3600)
-    mins = int((seconds % 3600) // 60)
-    secs = int(seconds % 60)
-    ms = int((seconds - int(seconds)) * 1000)
-    return f"{hrs:02}:{mins:02}:{secs:02},{ms:03}"
-
-def build_srt(plan_path: str, srt_path: str):
-    with open(plan_path, "r", encoding="utf-8") as f:
-        plan = json.load(f)
-
-    lines = []
-    idx = 1
-
-    for s in plan["segments"]:
-        start = seconds_to_srt_time(s["start"])
-        end = seconds_to_srt_time(s["end"])
-        text = s["text"].strip()
-
-        lines.append(str(idx))
-        lines.append(f"{start} --> {end}")
-        lines.append(text)
-        lines.append("")
-        idx += 1
-
-    with open(srt_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
-
-def render(video_path: str, plan_path: str, out_path: str):
+def render(video_path: str, out_path: str, caption_color: str):
     srt_path = "data/captions.srt"
-    temp_video = "data/video_no_audio.mp4"
+    temp_video = "data/video_subs.mp4"
 
-    # 1️⃣ Build subtitles
-    build_srt(plan_path, srt_path)
+    os.makedirs("data", exist_ok=True)
 
-    # 2️⃣ Burn subtitles (VIDEO ONLY)
+    # 1️⃣ Generate subtitles using Whisper
+    build_srt(video_path, srt_path)
+
+    if not os.path.exists(srt_path):
+        raise RuntimeError("SRT generation failed")
+
+    # 2️⃣ Burn subtitles (GOOD SIZE, NOT ON FACE)
     subprocess.run([
         "ffmpeg", "-y",
         "-i", video_path,
-        "-vf", f"subtitles={srt_path}",
-        "-an",
+        "-vf",
+        f"subtitles={srt_path}:force_style="
+        f"'FontSize=26,PrimaryColour=&H{caption_color}&,"
+        f"OutlineColour=&H000000&,Outline=1,MarginV=40'",
         "-c:v", "libx264",
+        "-c:a", "aac",
+        "-af", "volume=2.0",
         temp_video
     ], check=True)
 
-    # 3️⃣ Merge audio WITH LOUDNESS NORMALIZATION (IMPORTANT)
-    subprocess.run([
-        "ffmpeg", "-y",
-        "-i", temp_video,
-        "-i", video_path,
-        "-map", "0:v:0",
-        "-map", "1:a:0",
-        "-c:v", "copy",
-        "-af", "loudnorm=I=-16:LRA=11:TP=-1.5",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        out_path
-    ], check=True)
+    # 3️⃣ Output
+    os.replace(temp_video, out_path)

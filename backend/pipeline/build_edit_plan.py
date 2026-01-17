@@ -1,31 +1,27 @@
-import json
+import re
 
-def build_edit_plan(segments_path, out_path):
-    with open(segments_path) as f:
-        segments = json.load(f)
+IMPORTANT_KEYWORDS = {
+    "ai", "auto", "automatic", "pipeline", "editor",
+    "demo", "video", "model", "system"
+}
 
-    plan = {
-        "video": {"aspect_ratio": "16:9"},
-        "segments": []
-    }
+def extract_highlight_words(text: str):
+    words = text.split()
+    highlights = []
 
-    for i, s in enumerate(segments):
-        plan["segments"].append({
-            "id": s["id"],
-            "start": s["start"],
-            "end": s["end"],
-            "text": s["text"],
-            "captions": {
-                "enabled": True,
-                "animation": "fade",
-                "highlight_words": s["text"].split()[:1]
-            },
-            "title": {
-                "enabled": i == 0,
-                "text": "Introduction",
-                "animation": "slide"
-            }
-        })
+    for w in words:
+        clean = re.sub(r"[^\w]", "", w).lower()
 
-    with open(out_path, "w") as f:
-        json.dump(plan, f, indent=2)
+        # numbers (age, years, counts)
+        if clean.isdigit():
+            highlights.append(w)
+
+        # capitalized words (names)
+        elif w[0].isupper():
+            highlights.append(w)
+
+        # domain keywords
+        elif clean in IMPORTANT_KEYWORDS:
+            highlights.append(w)
+
+    return list(set(highlights))
