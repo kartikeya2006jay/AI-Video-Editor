@@ -1,0 +1,89 @@
+{
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 6.0,
+      "text": "Hi everyone, I am Srivindu Kumar and basically what I am going to show you, this is a demo of"
+    },
+    {
+      "start": 6.0,
+      "end": 11.0,
+      "text": "auto video like editor, it's sort of auto video editor."
+    },
+    {
+      "start": 11.0,
+      "end": 16.0,
+      "text": "So whatever you are going to see, whatever captions or subtitles that you are seeing in the background,"
+    },
+    {
+      "start": 16.0,
+      "end": 23.0,
+      "text": "it's basically auto generated, it's all been analyzed synthesized and everything is detected by AI"
+    },
+    {
+      "start": 23.0,
+      "end": 25.0,
+      "text": "and it has been done by AI."
+    },
+    {
+      "start": 25.0,
+      "end": 30.0,
+      "text": "You might be seeing some sort of like highlighted word here."
+    },
+    {
+      "start": 30.0,
+      "end": 32.0,
+      "text": "You might be seeing some highlighted word."
+    },
+    {
+      "start": 32.0,
+      "end": 36.0,
+      "text": "That highlighted word is also generated via the AI."
+    },
+    {
+      "start": 36.0,
+      "end": 44.0,
+      "text": "It also, it analyzes the context and based on that, it creates and some emphasized word and based on that,"
+    },
+    {
+      "start": 44.0,
+      "end": 46.0,
+      "text": "it does all sort of editing."
+    },
+    {
+      "start": 46.0,
+      "end": 51.0,
+      "text": "The color that you are seeing, each and everything is done by AI and by a pipeline."
+    },
+    {
+      "start": 51.0,
+      "end": 52.0,
+      "text": "That's all."
+    },
+    {
+      "start": 52.0,
+      "end": 53.0,
+      "text": "Thank you so much."
+    }
+  ],
+  "theme": "default",
+  "video_info": {
+    "duration": 54.241367,
+    "original_path": "sessions/ae75e719-5edc-407e-b078-fac064c97a93/input.mp4"
+  },
+  "theme_settings": {
+    "captions": {
+      "bold": true,
+      "italic": false,
+      "fontSize": 24,
+      "fontColor": "#FFFFFF",
+      "backgroundColor": "#00000080",
+      "position": "bottom"
+    },
+    "video": {
+      "brightness": 100,
+      "contrast": 100,
+      "saturation": 100
+    }
+  }
+}

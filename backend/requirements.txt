@@ -1,8 +1,7 @@
-fastapi
-uvicorn
-openai-whisper
-moviepy
-ffmpeg-python
-spacy
-python-multipart
-torch
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+openai-whisper==20231117
+ffmpeg-python==0.2.0
+pytest==7.4.3
+torch==2.1.1  # CPU version
