@@ -1,38 +1,42 @@
 import { THEMES, ANIMATIONS, VIDEO_MODES } from "../themes"
 
-type Options = {
-  theme: string
-  animation: string
-  mode: string
-}
-
 type Props = {
-  options: Options
-  setOptions: (o: Options) => void
+  options: {
+    theme: string
+    animation: string
+    mode: string
+  }
+  setOptions: (o: any) => void
 }
 
 export default function OptionsPanel({ options, setOptions }: Props) {
   return (
-    <div className="space-y-4">
+    <div style={{ marginTop: 20 }}>
       <div>
         <label>Theme</label>
         <select
-          className="block w-full text-black"
           value={options.theme}
-          onChange={e => setOptions({ ...options, theme: e.target.value })}
+          onChange={e =>
+            setOptions({ ...options, theme: e.target.value })
+          }
+          style={{ display: "block", color: "black" }}
         >
           {THEMES.map(t => (
-            <option key={t.id} value={t.id}>{t.label}</option>
+            <option key={t.id} value={t.id}>
+              {t.label}
+            </option>
           ))}
         </select>
       </div>
 
-      <div>
+      <div style={{ marginTop: 10 }}>
         <label>Caption Animation</label>
         <select
-          className="block w-full text-black"
           value={options.animation}
-          onChange={e => setOptions({ ...options, animation: e.target.value })}
+          onChange={e =>
+            setOptions({ ...options, animation: e.target.value })
+          }
+          style={{ display: "block", color: "black" }}
         >
           {ANIMATIONS.map(a => (
             <option key={a} value={a}>{a}</option>
@@ -40,12 +44,14 @@ export default function OptionsPanel({ options, setOptions }: Props) {
         </select>
       </div>
 
-      <div>
+      <div style={{ marginTop: 10 }}>
         <label>Video Mode</label>
         <select
-          className="block w-full text-black"
           value={options.mode}
-          onChange={e => setOptions({ ...options, mode: e.target.value })}
+          onChange={e =>
+            setOptions({ ...options, mode: e.target.value })
+          }
+          style={{ display: "block", color: "black" }}
         >
           {VIDEO_MODES.map(v => (
             <option key={v} value={v}>{v}</option>

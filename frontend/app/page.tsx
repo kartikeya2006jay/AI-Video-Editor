@@ -1,50 +1,75 @@
 "use client"
 
 import { useState } from "react"
-import UploadBox from "../components/UploadBox"
-import OptionsPanel from "../components/OptionsPanel"
-import VideoPreview from "../components/VideoPreview"
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null)
-  const [outputUrl, setOutputUrl] = useState<string | null>(null)
-  const [options, setOptions] = useState({
-    theme: "default",
-    animation: "fade",
-    mode: "normal"
-  })
+  const [color, setColor] = useState("#ffffff")
+  const [videoUrl, setVideoUrl] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  const generateVideo = async () => {
-    if (!file) return
+  const generate = async () => {
+    if (!file) return alert("Upload a video")
 
+    setLoading(true)
     const form = new FormData()
     form.append("video", file)
-    form.append("options", JSON.stringify(options))
+    form.append("caption_color", color.replace("#", "").toUpperCase())
 
-    await fetch("http://localhost:8000/process", {
+    const res = await fetch("http://localhost:8000/process", {
       method: "POST",
       body: form
     })
 
-    setOutputUrl("http://localhost:8000/output-video")
+    setLoading(false)
+    if (!res.ok) return alert("Backend error")
+
+    setVideoUrl(`http://localhost:8000/output-video?t=${Date.now()}`)
   }
 
   return (
-    <main className="p-8 space-y-6 bg-black text-white min-h-screen">
-      <h1 className="text-3xl font-bold">AI Talking-Head Video Editor</h1>
+    <main className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 flex items-center justify-center">
+      <div className="bg-white rounded-xl shadow-xl p-8 w-[420px] space-y-4">
+        <h1 className="text-2xl font-bold text-center">
+          AI Talking-Head Video Editor
+        </h1>
 
-      <UploadBox onUpload={setFile} />
+        <div>
+          <label className="text-sm font-medium">Upload Video</label>
+          <input
+            type="file"
+            accept="video/*"
+            className="mt-1 block w-full"
+            onChange={e => setFile(e.target.files?.[0] || null)}
+          />
+        </div>
 
-      <OptionsPanel options={options} setOptions={setOptions} />
+        <div>
+          <label className="text-sm font-medium">Caption Color</label>
+          <input
+            type="color"
+            value={color}
+            onChange={e => setColor(e.target.value)}
+            className="w-full h-10"
+          />
+        </div>
 
-      <button
-        onClick={generateVideo}
-        className="bg-blue-600 px-6 py-2 rounded"
-      >
-        Generate Video
-      </button>
+        <button
+          onClick={generate}
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+        >
+          {loading ? "Processing..." : "Generate Video"}
+        </button>
 
-      {outputUrl && <VideoPreview url={outputUrl} />}
+        {videoUrl && (
+          <video
+            src={videoUrl}
+            controls
+            className="w-full rounded mt-4"
+          />
+        )}
+      </div>
     </main>
   )
 }
