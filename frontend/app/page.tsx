@@ -116,6 +116,8 @@ export default function Home() {
   const [isCaptionPanelOpen, setIsCaptionPanelOpen] = useState(true)
   const [showCustomColorPicker, setShowCustomColorPicker] = useState<null | 'font' | 'bg' | 'border'>(null)
   const [customColor, setCustomColor] = useState<string>("#FFFFFF")
+  const [editingSubtitleId, setEditingSubtitleId] = useState<string | null>(null)
+  const [timeRange, setTimeRange] = useState({ start: 0, end: 5 })
   
   // Subtitle state
   const [subtitles, setSubtitles] = useState<Subtitle[]>([
@@ -380,6 +382,15 @@ export default function Home() {
     ))
   }
 
+  const updateSubtitleTime = (id: string, type: 'start' | 'end', value: number) => {
+    setSubtitles(prev => prev.map(sub => 
+      sub.id === id ? { 
+        ...sub, 
+        [type === 'start' ? 'startTime' : 'endTime']: value 
+      } : sub
+    ))
+  }
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
@@ -460,13 +471,16 @@ export default function Home() {
 
   const addNewSubtitle = () => {
     const newId = (subtitles.length + 1).toString()
+    const lastSubtitle = subtitles[subtitles.length - 1]
     const newSubtitle: Subtitle = {
       id: newId,
       text: "New subtitle text",
-      startTime: subtitles[subtitles.length - 1]?.endTime || 0,
-      endTime: (subtitles[subtitles.length - 1]?.endTime || 0) + 5
+      startTime: lastSubtitle ? lastSubtitle.endTime : 0,
+      endTime: lastSubtitle ? lastSubtitle.endTime + 5 : 5
     }
     setSubtitles([...subtitles, newSubtitle])
+    setEditingSubtitleId(newId)
+    setTimeRange({ start: newSubtitle.startTime, end: newSubtitle.endTime })
   }
 
   const deleteSubtitle = (id: string) => {
@@ -474,6 +488,29 @@ export default function Home() {
     if (currentSubtitle?.id === id) {
       setCurrentSubtitle(null)
     }
+    if (editingSubtitleId === id) {
+      setEditingSubtitleId(null)
+    }
+  }
+
+  const editTimeRange = (id: string) => {
+    const subtitle = subtitles.find(sub => sub.id === id)
+    if (subtitle) {
+      setEditingSubtitleId(id)
+      setTimeRange({ start: subtitle.startTime, end: subtitle.endTime })
+    }
+  }
+
+  const saveTimeRange = () => {
+    if (editingSubtitleId) {
+      updateSubtitleTime(editingSubtitleId, 'start', timeRange.start)
+      updateSubtitleTime(editingSubtitleId, 'end', timeRange.end)
+      setEditingSubtitleId(null)
+    }
+  }
+
+  const cancelTimeRangeEdit = () => {
+    setEditingSubtitleId(null)
   }
 
   const applyStyleToAll = () => {
@@ -1101,13 +1138,100 @@ export default function Home() {
                               </span>
                             )}
                           </div>
-                          <button
-                            onClick={() => deleteSubtitle(subtitle.id)}
-                            className="p-1 hover:bg-red-500/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                          >
-                            <Trash2 className="w-3 h-3 text-red-400" />
-                          </button>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => editTimeRange(subtitle.id)}
+                              className="p-1 hover:bg-blue-500/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                              title="Edit time range"
+                            >
+                              <Clock className="w-3 h-3 text-blue-400" />
+                            </button>
+                            <button
+                              onClick={() => deleteSubtitle(subtitle.id)}
+                              className="p-1 hover:bg-red-500/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                              title="Delete subtitle"
+                            >
+                              <Trash2 className="w-3 h-3 text-red-400" />
+                            </button>
+                          </div>
                         </div>
+                        
+                        {/* Time Range Editor */}
+                        {editingSubtitleId === subtitle.id && (
+                          <div className="mb-3 p-3 bg-gray-800/50 rounded-lg animate-slide-up">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-white">Set Time Range</span>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={saveTimeRange}
+                                  className="px-2 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs rounded-lg transition-colors"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={cancelTimeRangeEdit}
+                                  className="px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-400 text-xs rounded-lg transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                            <div className="space-y-3">
+                              <div className="space-y-1">
+                                <label className="text-xs text-gray-400">Start Time (seconds)</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={videoDuration}
+                                  step="0.1"
+                                  value={timeRange.start}
+                                  onChange={(e) => setTimeRange(prev => ({ ...prev, start: parseFloat(e.target.value) }))}
+                                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm"
+                                />
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">{formatDuration(timeRange.start)}</span>
+                                  <input
+                                    type="range"
+                                    min="0"
+                                    max={videoDuration || 60}
+                                    step="0.5"
+                                    value={timeRange.start}
+                                    onChange={(e) => setTimeRange(prev => ({ ...prev, start: parseFloat(e.target.value) }))}
+                                    className="flex-1 h-1.5 bg-gray-600 rounded-full appearance-none cursor-pointer"
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs text-gray-400">End Time (seconds)</label>
+                                <input
+                                  type="number"
+                                  min={timeRange.start + 0.5}
+                                  max={videoDuration}
+                                  step="0.1"
+                                  value={timeRange.end}
+                                  onChange={(e) => setTimeRange(prev => ({ ...prev, end: parseFloat(e.target.value) }))}
+                                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm"
+                                />
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">{formatDuration(timeRange.end)}</span>
+                                  <input
+                                    type="range"
+                                    min={timeRange.start + 0.5}
+                                    max={videoDuration || 60}
+                                    step="0.5"
+                                    value={timeRange.end}
+                                    onChange={(e) => setTimeRange(prev => ({ ...prev, end: parseFloat(e.target.value) }))}
+                                    className="flex-1 h-1.5 bg-gray-600 rounded-full appearance-none cursor-pointer"
+                                  />
+                                </div>
+                              </div>
+                              <div className="text-xs text-gray-500 pt-2 border-t border-gray-700/50">
+                                Subtitle will be visible from {formatDuration(timeRange.start)} to {formatDuration(timeRange.end)}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
                         <textarea
                           value={subtitle.text}
                           onChange={(e) => updateSubtitleText(subtitle.id, e.target.value)}
